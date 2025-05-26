@@ -88,10 +88,5 @@ This project is licensed under the MIT License.
 
 See [LICENCE](LICENCE) for details.
 
-## Author
-
-@scadinot
-
----
-
-*This tool is intended for research and educational use. Please cite appropriately if used in publications.*
+#
+*This tool uses the asPLS algorithm from pybaselines.*
