@@ -84,9 +84,7 @@ pip install numpy pandas matplotlib pybaselines scipy openpyxl
 
 ## License
 
-This project is licensed under the MIT License. 
+MIT License. See [LICENCE](LICENCE) for details.
 
-See [LICENCE](LICENCE) for details.
-
-#
-*This tool uses the asPLS algorithm from pybaselines.*
+**Note:**  
+This application uses the asPLS algorithm from [pybaselines](https://github.com/derb12/pybaselines) for baseline correction.
