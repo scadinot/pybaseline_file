@@ -63,7 +63,7 @@ def calculateSignalBaseLine(signalValues, potentialValues, xPeakVoltage, exclusi
     exclusion_min = xPeakVoltage - exclusionWidth
     exclusion_max = xPeakVoltage + exclusionWidth
     weights[(potentialValues > exclusion_min) & (potentialValues < exclusion_max)] = 0.001
-    baselineValues, _ = aspls(signalValues, lam=lam, diff_order=2, weights=weights, tol=1e-2, max_iter=25)
+    baselineValues, _ = aspls(signalValues, lam=lam, diff_order=2, weights=weights, tol=1e-2, max_iter=25) # type: ignore
     return baselineValues, (exclusion_min, exclusion_max)
 
 def plotSignalAnalysis(potentialValues, signalValues, signalSmoothed, baseline, signalCorrected, xCorrectedVoltage, yCorrectedCurrent, fileName, outputFolder) -> None:
@@ -89,7 +89,7 @@ def processSignalFile(filePath, outputFolder, sep, decimal, export_choice) -> di
         fileName = os.path.basename(filePath)
         dataFrame = readFile(filePath, sep=sep, decimal=decimal)
         if dataFrame is None:
-            return None
+            return {}
 
         potentialValues, signalValues, cleaned_df = processData(dataFrame)
         signalSmoothed = smoothSignal(signalValues)
@@ -198,19 +198,24 @@ def launch_gui():
 
             wb = load_workbook(excel_path)
             ws = wb.active
-            header = [cell.value for cell in ws[1]]
-            freq_col_letter = get_column_letter(header.index('Fréq (Hz)') + 1)
+            if ws is not None:
+                header = [cell.value for cell in ws[1]]
+                freq_col_letter = get_column_letter(header.index('Fréq (Hz)') + 1)
 
-            for col_index, col_name in enumerate(header):
-                if col_name.endswith("- Courant (A)"):
-                    elec = col_name.split(" - ")[0]
-                    charge_col = f"{elec} - Charge (C)"
-                    if charge_col in header:
-                        charge_col_index = header.index(charge_col) + 1
-                        current_col_letter = get_column_letter(col_index + 1)
-                        for row in range(2, ws.max_row + 1):
-                            formula = f"={current_col_letter}{row}/{freq_col_letter}{row}"
-                            ws.cell(row=row, column=charge_col_index, value=formula)
+                for col_index, col_name in enumerate(header):
+                    if col_name.endswith("- Courant (A)"): # type: ignore
+                        elec = col_name.split(" - ")[0] # type: ignore
+                        charge_col = f"{elec} - Charge (C)"
+                        if charge_col in header:
+                            charge_col_index = header.index(charge_col) + 1
+                            current_col_letter = get_column_letter(col_index + 1)
+                            for row in range(2, ws.max_row + 1):
+                                formula = f"={current_col_letter}{row}/{freq_col_letter}{row}"
+                                ws.cell(row=row, column=charge_col_index, value=formula)
+            else:
+                log_box.config(state="normal")
+                log_box.insert("end", "Erreur : Impossible de charger la feuille Excel active.\n", ("error",))
+                log_box.config(state="disabled")
 
             wb.save(excel_path)
             log_box.config(state="normal")
